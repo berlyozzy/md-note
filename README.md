@@ -2,6 +2,8 @@
 
 **MD-Note** is a simple browser extension that allows users to save selected text from any page as a markdown or plain text file.
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/berlyozzy)
+
 ## Support
 
 ### Browser Support
@@ -37,3 +39,4 @@ According to MDN it is supported in **Chrome**, **Edge**, **Opera** and **Safari
 ![Save](readme_img/example3.jpg)
 
 ![View](readme_img/example4.jpg)
+
