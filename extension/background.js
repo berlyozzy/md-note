@@ -129,6 +129,56 @@ const get_text_selection = async () => {
     }
     
     let selection = window.getSelection().toString();
+
+    
+    const pdf_init = async () => {
+        return new Promise((resolve, reject) => {
+
+            const onMessage = (message) => {
+                const {origin} = message;
+                if ( 
+                    origin === 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' || 
+                    origin === 'null'
+                ) {
+                    window.removeEventListener('message', onMessage);
+                    resolve(true)
+                }
+            }
+
+            window.addEventListener('message', onMessage );
+            window.postMessage("md-note-pdf-init");
+
+            setTimeout(() => {
+                reject(false)
+            }, 250);
+
+
+        });
+    }
+
+    const getPdfSelectedText = async () => {
+
+        return new Promise((resolve, reject) => {
+
+            const onMessage = ({origin, data}) => {
+                if ( 
+                    origin === 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' &&
+                    data && data.type === 'getSelectedTextReply'
+                ) {
+                    window.removeEventListener('message', onMessage);
+                    resolve(data.selectedText)
+                }
+            }
+
+            window.addEventListener('message', onMessage );
+            window.postMessage("md-note-pdf-ready");
+
+            setTimeout(() => {
+                reject(false)
+            }, 250);
+
+        });
+    }
     
     if(document.head.querySelector("#md-note-pdf-script") === null && selection.length == 0){
 
@@ -137,86 +187,13 @@ const get_text_selection = async () => {
         pdf_script.setAttribute("id", "md-note-pdf-script")
         document.head.append(pdf_script);
 
-        const pdf_init = async () => {
-            return new Promise((resolve, reject) => {
-
-                const onMessage = (message) => {
-                    const {origin} = message;
-                    if ( 
-                        origin === 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' || 
-                        origin === 'null'
-                    ) {
-                        window.removeEventListener('message', onMessage);
-                        resolve(true)
-                    }
-                }
-    
-                window.addEventListener('message', onMessage );
-                window.postMessage("md-note-pdf-init");
-
-                setTimeout(() => {
-                    reject(false)
-                }, 250);
-
-    
-            });
-        }
-
-        const getPdfSelectedText = async () => {
-
-            return new Promise((resolve, reject) => {
-
-                const onMessage = ({origin, data}) => {
-                    if ( 
-                        (origin === 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' || 
-                        origin === 'null') &&
-                        data && data.type === 'getSelectedTextReply'
-                    ) {
-                        window.removeEventListener('message', onMessage);
-                        resolve(data.selectedText)
-                    }
-                }
-
-                window.addEventListener('message', onMessage );
-                window.postMessage("md-note-pdf-ready");
-
-                setTimeout(() => {
-                    reject(false)
-                }, 250);
-
-            });
-        }
 
         await pdf_init();
         selection = await getPdfSelectedText();
     }     
     
     if(document.head.querySelector("#md-note-pdf-script") !== null && selection.length == 0){
-                
-        const getPdfSelectedText = async () => {
 
-            return new Promise((resolve, reject) => {
-
-                const onMessage = ({origin, data}) => {
-                    if ( 
-                        origin === 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' &&
-                        data && data.type === 'getSelectedTextReply'
-                    ) {
-                        window.removeEventListener('message', onMessage);
-                        resolve(data.selectedText)
-                    }
-                }
-
-                window.addEventListener('message', onMessage );
-                window.postMessage("md-note-pdf-ready");
-
-                setTimeout(() => {
-                    reject(false)
-                }, 250);
-
-            });
-        }
-        
         selection = await getPdfSelectedText();
     }
 
@@ -412,10 +389,8 @@ const get_text_selection = async () => {
         setTimeout(() => {
             container.remove();
             document.head.querySelector("#md-note-stylesheet").remove()
-            pdf_script.remove();
         }, 2500);
     }
-
 
     const component = CreateModal(selection);
     AddStyleSheet(stylesheet);
